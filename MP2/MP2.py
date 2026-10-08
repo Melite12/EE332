@@ -60,23 +60,23 @@ def Dilation(filename, SE):
 
 def Opening(filename, SE):
 
-    img_erosion = Erosion(filename, SE)
+    img_erosion = Erosion(filename, SE2)
     cv2.imwrite("MP2/Results/erosion.bmp", img_erosion)
-    img_opening = Dilation("MP2/Results/erosion.bmp", SE)
+    img_opening = Dilation("MP2/Results/erosion.bmp", SE4)
 
     return img_opening
 
 def Closing(filename, SE):
 
-    img_dilation = Dilation(filename, SE)
+    img_dilation = Dilation(filename, SE4)
     cv2.imwrite("MP2/Results/dilation.bmp", img_dilation)
-    img_closing = Erosion("MP2/Results/dilation.bmp", SE)
+    img_closing = Erosion("MP2/Results/dilation.bmp", SE1)
 
     return img_closing
 
 def Boundary(filename, SE):
     
-    img_erosion = Erosion(filename, SE)
+    img_erosion = Erosion(filename, SE2)
     img, img_boundary = read_img(filename)
     img_boundary = img - img_erosion
 
@@ -103,35 +103,44 @@ SE4 = np.array([[1,1,1,1],
                 [1,1,1,1],
                 [1,1,1,1],])
 
-SE = SE1
+SE = SE4
 
-gun_erosion = Erosion("MP2/gun.bmp", SE) * 250
-gun_dilation = Dilation("MP2/gun.bmp", SE) * 250
+gun_erosion = Erosion("MP2/gun.bmp", SE2) * 250
+gun_dilation = Dilation("MP2/gun.bmp", SE1) * 250
 gun_opening = Opening("MP2/gun.bmp", SE) * 250
 gun_closing = Closing("MP2/gun.bmp", SE) * 250
 gun_boundary = Boundary("MP2/gun.bmp", SE) * 250
 
-# cv2.imshow("Gun_E", gun_erosion)
-# cv2.imshow("Gun_D", gun_dilation)
-# cv2.imshow("Gun_O", gun_opening)
+cv2.imshow("Gun_E", gun_erosion)
+cv2.imshow("Gun_D", gun_dilation)
+cv2.imshow("Gun_O", gun_opening)
 cv2.imshow("Gun_C", gun_closing)
 cv2.imshow("Gun_B", gun_boundary)
 
-Palm_erosion = Erosion("MP2/Palm.bmp", SE) * 250
-Palm_dilation = Dilation("MP2/Palm.bmp", SE) * 250
+Palm_erosion = Erosion("MP2/Palm.bmp", SE2) * 250
+Palm_dilation = Dilation("MP2/Palm.bmp", SE1) * 250
 Palm_opening = Opening("MP2/Palm.bmp", SE) * 250
 Palm_closing = Closing("MP2/Palm.bmp", SE) * 250
 Palm_boundary = Boundary("MP2/Palm.bmp", SE) * 250
 
-# cv2.imshow("Palm_E", Palm_erosion)
-# cv2.imshow("Palm_D", Palm_dilation)
-# cv2.imshow("Palm_O", Palm_opening)
+cv2.imshow("Palm_E", Palm_erosion)
+cv2.imshow("Palm_D", Palm_dilation)
+cv2.imshow("Palm_O", Palm_opening)
 cv2.imshow("Palm_C", Palm_closing)
 cv2.imshow("Palm_B", Palm_boundary)
 
 
+cv2.imwrite("MP2/Results/gun_erosion.bmp", gun_erosion)
+cv2.imwrite("MP2/Results/gun_dilation.bmp", gun_dilation)
+cv2.imwrite("MP2/Results/gun_opening.bmp", gun_opening)
+cv2.imwrite("MP2/Results/gun_closing.bmp", gun_closing)
+cv2.imwrite("MP2/Results/gun_boundary.bmp", gun_boundary)
 
-
+cv2.imwrite("MP2/Results/Palm_erosion.bmp", Palm_erosion)
+cv2.imwrite("MP2/Results/Palm_dilation.bmp", Palm_dilation)
+cv2.imwrite("MP2/Results/Palm_opening.bmp", Palm_opening)
+cv2.imwrite("MP2/Results/Palm_closing.bmp", Palm_closing)
+cv2.imwrite("MP2/Results/Palm_boundary.bmp", Palm_boundary)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
