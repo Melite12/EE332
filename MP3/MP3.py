@@ -84,5 +84,8 @@ moon, moon_light = HistoEqualization("MP3/moon.bmp")
 cv2.imshow("Moon", moon.astype(np.uint8))
 cv2.imshow("Moon_light", moon_light.astype(np.uint8))
 
+cv2.imwrite("MP3/Results/moon_Histogram.bmp", moon)
+cv2.imwrite("MP3/Results/moon_LinearLight.bmp", moon_light)
+
 cv2.waitKey(0)
 cv2.destroyAllWindows()
