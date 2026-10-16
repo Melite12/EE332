@@ -94,11 +94,9 @@ def testing(file, matrix, threshold, mode):
     return new_img
 
 
-
-
 files = ["MP4/training/img1.jpg", "MP4/training/img2.jpg", "MP4/training/img3.jpg", "MP4/training/img4.jpg", "MP4/training/img5.jpg", "MP4/training/img6.jpg", "MP4/training/img7.jpg"]
-threshold = 0.001 #HSI
-#threshold = 0.0001 #RGB
+#threshold = 0.001 #HSI
+threshold = 0.0001 #RGB
 mode = 0
 
 matrix = training(files, mode)
@@ -110,9 +108,9 @@ cv2.imshow("gun1", gun1)
 cv2.imshow("joy1", joy1)
 cv2.imshow("pointer1", pointer1)
 
-# cv2.imwrite("MP4/Results/gun_rgb.bmp", gun1)
-# cv2.imwrite("MP4/Results/joy_rgb.bmp", joy1)
-# cv2.imwrite("MP4/Results/pointer_rgb.bmp", pointer1)
+cv2.imwrite("MP4/Results/gun_rgb.bmp", gun1)
+cv2.imwrite("MP4/Results/joy_rgb.bmp", joy1)
+cv2.imwrite("MP4/Results/pointer_rgb.bmp", pointer1)
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
