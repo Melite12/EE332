@@ -46,29 +46,69 @@ def FindThreshold(Mag, percentageOfNonEdge):
 
     return T_low, T_high
 
+def LUT(angle):
+    if angle < 22.5 or angle >= 157.5:
+        offset = [[0,1], [0,-1]]
+    elif angle < 67.5 or angle >= 112.5:
+        offset = [[-1,1],[1,-1]]
+    else:
+        offset = [[-1,0],[1,0]]
+
+    return offset
+
+
+def NonmaximaSupress(Mag, Theta, method):
+
+    rows, cols = Mag.shape
+    angles = np.degrees(Theta) % 180
+    result = np.zeros_like(Mag)
+
+    match method:
+
+        case 'Quantization':
+            for r in range(1,rows-1):
+                for c in range(1,cols-1):
+                    offset = LUT(angles[r,c])
+                    neighbour1 = (Mag[r + offset[0][0], c + offset[0][1]])
+                    neighbour2 = (Mag[r + offset[1][0], c + offset[1][1]])
+                    if Mag[r, c] >= neighbour1 and Mag[r, c] >= neighbour2:
+                        result[r,c] = Mag[r, c]
+
+        case 'Interpolation':
+            result = result + 1
+
+    return result
+
 def CannyEdgeDetector(file):
     I = ReadImg(file)
+    
     N = 3
     sigma = 1
     S = GaussSmoothing(I, N, sigma)
+    
     Mag, Theta = ImageGradient(S)
 
-    # Mag_display = cv2.normalize(Mag, None, 0, 255, cv2.NORM_MINMAX)
-    # Mag_display = Mag_display.astype("uint8")
-
-    # cv2.imshow("Gradient magnitude", Mag_display)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    percentageOfNonEdge = 0.9
+    percentageOfNonEdge = 0.7
     T_low, T_high = FindThreshold(Mag, percentageOfNonEdge)
-    print(T_high)
+    Mag_display2 = cv2.normalize(Mag, None, 0, 255, cv2.NORM_MINMAX)
+    Mag_display2 = Mag_display2.astype("uint8")
+
+    Mag = NonmaximaSupress(Mag, Theta, 'Quantization')
+    
+    Mag_display = cv2.normalize(Mag, None, 0, 255, cv2.NORM_MINMAX)
+    Mag_display = Mag_display.astype("uint8")
+
+    cv2.imshow("Gradient magnitude", Mag_display)
+    cv2.imshow("Gradient magnitude 2", Mag_display2)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
 
 CannyEdgeDetector("MP5/lena.bmp")
 #cv2.imshow("Test", test)
 #cv2.imwrite("MP4/Results/gun_rgb.bmp", gun1)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 
