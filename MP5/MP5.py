@@ -79,6 +79,19 @@ def NonmaximaSupress(Mag, Theta, method):
 
     return result
 
+def Thresholding(Mag, T_high, T_low):
+    strong_mask = Mag >= T_high
+    weak_mask = Mag >= T_low
+
+    strong = np.where(strong_mask, Mag, 0)
+    weak = np.where(weak_mask, Mag, 0)
+
+    return strong, weak
+
+def EdgeLinking(Mag_low, Mag_high):
+
+
+
 def CannyEdgeDetector(file):
     I = ReadImg(file)
     
@@ -88,20 +101,22 @@ def CannyEdgeDetector(file):
     
     Mag, Theta = ImageGradient(S)
 
-    percentageOfNonEdge = 0.7
+    percentageOfNonEdge = 0.9
     T_low, T_high = FindThreshold(Mag, percentageOfNonEdge)
-    Mag_display2 = cv2.normalize(Mag, None, 0, 255, cv2.NORM_MINMAX)
-    Mag_display2 = Mag_display2.astype("uint8")
 
-    Mag = NonmaximaSupress(Mag, Theta, 'Quantization')
+    Mag_surpress = NonmaximaSupress(Mag, Theta, 'Quantization')
+
+    Mag_high, Mag_low = Thresholding(Mag_surpress, T_high, T_low)
+
+    E = EdgeLinking(Mag_low, Mag_high)
     
-    Mag_display = cv2.normalize(Mag, None, 0, 255, cv2.NORM_MINMAX)
-    Mag_display = Mag_display.astype("uint8")
+    # high_display = (Mag_high > 0).astype(np.uint8) * 255
+    # low_display = (Mag_low > 0).astype(np.uint8) * 255
 
-    cv2.imshow("Gradient magnitude", Mag_display)
-    cv2.imshow("Gradient magnitude 2", Mag_display2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("High threshold", high_display)
+    # cv2.imshow("Low threshold", low_display)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
 
 
