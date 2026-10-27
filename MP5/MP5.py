@@ -13,7 +13,6 @@ def GaussSmoothing(I, N, sigma):
     gaussian_2d = gaussian_1d @ gaussian_1d.T
 
     S = cv2.filter2D(I, -1, gaussian_2d) # you can change boundary using borderType = cv2.BORDER_REPLICATE / REFLECT / CONSTANT
-    S = S / 255
     return S
 
 def ImageGradient(S):
@@ -36,6 +35,17 @@ def ImageGradient(S):
     # print(Theta.shape)
     return Mag, Theta
 
+def FindThreshold(Mag, percentageOfNonEdge):
+    hist, bin_edges = np.histogram(Mag, bins=50) # make a histogram
+    cumulative = np.cumsum(hist) # cumulative histogram
+    threshold = cumulative[-1] * percentageOfNonEdge # the threshold of number of pixels
+    bin_index = np.searchsorted(cumulative, threshold) # the index at which we get the threshold
+    
+    T_high = bin_edges[bin_index + 1] # calculate T_high as the bin_value at the next index in bin edges
+    T_low = 0.5 * T_high
+
+    return T_low, T_high
+
 def CannyEdgeDetector(file):
     I = ReadImg(file)
     N = 3
@@ -49,6 +59,10 @@ def CannyEdgeDetector(file):
     # cv2.imshow("Gradient magnitude", Mag_display)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
+
+    percentageOfNonEdge = 0.9
+    T_low, T_high = FindThreshold(Mag, percentageOfNonEdge)
+    print(T_high)
 
 
 CannyEdgeDetector("MP5/lena.bmp")
