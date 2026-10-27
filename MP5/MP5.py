@@ -81,7 +81,7 @@ def NonmaximaSupress(Mag, Theta, method):
 
 def Thresholding(Mag, T_high, T_low):
     strong_mask = Mag >= T_high
-    weak_mask = Mag >= T_low
+    weak_mask = (Mag < T_high) & (Mag >= T_low)
 
     strong = np.where(strong_mask, Mag, 0)
     weak = np.where(weak_mask, Mag, 0)
@@ -89,7 +89,9 @@ def Thresholding(Mag, T_high, T_low):
     return strong, weak
 
 def EdgeLinking(Mag_low, Mag_high):
-
+    result = Mag_high.copy()
+    edges_high = Mag_high > 0
+    
 
 
 def CannyEdgeDetector(file):
@@ -108,7 +110,7 @@ def CannyEdgeDetector(file):
 
     Mag_high, Mag_low = Thresholding(Mag_surpress, T_high, T_low)
 
-    E = EdgeLinking(Mag_low, Mag_high)
+    EdgeLinking(Mag_low, Mag_high)
     
     # high_display = (Mag_high > 0).astype(np.uint8) * 255
     # low_display = (Mag_low > 0).astype(np.uint8) * 255
