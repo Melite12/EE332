@@ -26,7 +26,7 @@ def ImageGradient(S):
 
     Gx = cv2.filter2D(S, -1, SobelX)
     Gy = cv2.filter2D(S, -1, SobelY)
-    Mag = np.sqrt(Gx**2, Gy**2)
+    Mag = np.sqrt(Gx**2 + Gy**2)
     Theta = np.arctan2(Gy, Gx)
 
     # print(Mag)
@@ -49,8 +49,10 @@ def FindThreshold(Mag, percentageOfNonEdge):
 def LUT(angle):
     if angle < 22.5 or angle >= 157.5:
         offset = [[0,1], [0,-1]]
-    elif angle < 67.5 or angle >= 112.5:
+    elif angle < 67.5:
         offset = [[-1,1],[1,-1]]
+    elif angle >= 112.5:
+        offset = [[-1,-1],[1,1]]
     else:
         offset = [[-1,0],[1,0]]
 
@@ -74,9 +76,6 @@ def NonmaximaSupress(Mag, Theta, method):
                     if Mag[r, c] >= neighbour1 and Mag[r, c] >= neighbour2:
                         result[r,c] = Mag[r, c]
 
-        case 'Interpolation':
-            result = result + 1
-
     return result
 
 def Thresholding(Mag, T_high, T_low):
@@ -88,9 +87,44 @@ def Thresholding(Mag, T_high, T_low):
 
     return strong, weak
 
+
+
+
 def EdgeLinking(Mag_low, Mag_high):
     result = Mag_high.copy()
-    edges_high = Mag_high > 0
+    visited_high = np.zeros_like(Mag_high)
+    rows,cols = Mag_high.shape
+
+    neighbors = [[-1, -1], [-1, 0], [-1, 1],[0, -1],[0, 1],[1, -1],[1, 0],[1, 1]]
+
+    def follow_weak(r,c):
+        for dr, dc in neighbors:
+            r_new, c_new = r + dr, c + dc
+            if 0 <= r_new < rows and 0 <= c_new < cols:
+                if Mag_low[r_new, c_new] > 0 and Mag_high[r_new,c_new] == 0 and result[r_new, c_new] == 0:
+                    result[r_new,c_new] = Mag_low[r_new,c_new]
+                    follow_weak(r_new,c_new)
+
+    def follow_strong(r,c):
+        visited_high[r, c] = True
+        endpoint = True
+        for dr, dc in neighbors:
+            r_new, c_new = r + dr, c + dc
+
+            if 0 <= r_new < rows and 0 <= c_new < cols:
+                if Mag_high[r_new, c_new] > 0 and not visited_high[r_new,c_new]:
+                    endpoint = False
+                    follow_strong(r_new, c_new)
+
+        if endpoint:
+            follow_weak(r, c)
+        
+    strong_rows, strong_columns = np.nonzero(Mag_high)
+    for r,c in zip(strong_rows, strong_columns):
+        if not visited_high[r, c]:
+            follow_strong(r, c)
+
+    return result
     
 
 
@@ -103,22 +137,20 @@ def CannyEdgeDetector(file):
     
     Mag, Theta = ImageGradient(S)
 
-    percentageOfNonEdge = 0.9
+    percentageOfNonEdge = 0.8
     T_low, T_high = FindThreshold(Mag, percentageOfNonEdge)
 
     Mag_surpress = NonmaximaSupress(Mag, Theta, 'Quantization')
 
     Mag_high, Mag_low = Thresholding(Mag_surpress, T_high, T_low)
 
-    EdgeLinking(Mag_low, Mag_high)
+    E = EdgeLinking(Mag_low, Mag_high)
     
-    # high_display = (Mag_high > 0).astype(np.uint8) * 255
-    # low_display = (Mag_low > 0).astype(np.uint8) * 255
+    display = (E > 0).astype(np.uint8) * 255
 
-    # cv2.imshow("High threshold", high_display)
-    # cv2.imshow("Low threshold", low_display)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    cv2.imshow("Edge", display)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 
