@@ -131,13 +131,13 @@ def EdgeLinking(Mag_low, Mag_high):
 def CannyEdgeDetector(file):
     I = ReadImg(file)
     
-    N = 3
+    N = 5
     sigma = 1
     S = GaussSmoothing(I, N, sigma)
     
     Mag, Theta = ImageGradient(S)
 
-    percentageOfNonEdge = 0.8
+    percentageOfNonEdge = 0.75
     T_low, T_high = FindThreshold(Mag, percentageOfNonEdge)
 
     Mag_surpress = NonmaximaSupress(Mag, Theta, 'Quantization')
@@ -146,18 +146,29 @@ def CannyEdgeDetector(file):
 
     E = EdgeLinking(Mag_low, Mag_high)
     
-    display = (E > 0).astype(np.uint8) * 255
+    Edge = (E > 0).astype(np.uint8) * 255
+    return Edge 
 
-    cv2.imshow("Edge", display)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+Test = CannyEdgeDetector("MP5/test1.bmp")
+Pointer = CannyEdgeDetector("MP5/pointer1.bmp")
+Joy = CannyEdgeDetector("MP5/joy1.bmp")
+Lena = CannyEdgeDetector("MP5/lena.bmp")
+
+cv2.imshow("Test", Test)
+cv2.imshow("Pointer", Pointer)
+cv2.imshow("Joy", Joy)
+cv2.imshow("Lena", Lena)
+
+cv2.imwrite("MP5/Results/Test3.bmp", Test)
+cv2.imwrite("MP5/Results/Pointer3.bmp", Pointer)
+cv2.imwrite("MP5/Results/Joy3.bmp", Joy)
+cv2.imwrite("MP5/Results/Lena3.bmp", Lena)
 
 
+# First version N = 3, sigma = 1, % = 0.8
+# Third version N = 5, sigma = 1, % = 0.75
 
-CannyEdgeDetector("MP5/lena.bmp")
-#cv2.imshow("Test", test)
-#cv2.imwrite("MP4/Results/gun_rgb.bmp", gun1)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 
