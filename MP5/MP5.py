@@ -24,8 +24,13 @@ def ImageGradient(S):
                        [0, 0, 0],
                        [-1, -2, -1]], dtype=float)
 
-    Gx = cv2.filter2D(S, -1, SobelX)
-    Gy = cv2.filter2D(S, -1, SobelY)
+    RobertX = np.array([[1,0],
+                        [0,-1]], dtype = float)
+    RobertY = np.array([[0,-1],
+                        [1,0]], dtype = float)
+
+    Gx = cv2.filter2D(S, -1, RobertX)
+    Gy = cv2.filter2D(S, -1, RobertY)
     Mag = np.sqrt(Gx**2 + Gy**2)
     Theta = np.arctan2(Gy, Gx)
 
@@ -86,8 +91,6 @@ def Thresholding(Mag, T_high, T_low):
     weak = np.where(weak_mask, Mag, 0)
 
     return strong, weak
-
-
 
 
 def EdgeLinking(Mag_low, Mag_high):
@@ -159,10 +162,10 @@ cv2.imshow("Pointer", Pointer)
 cv2.imshow("Joy", Joy)
 cv2.imshow("Lena", Lena)
 
-cv2.imwrite("MP5/Results/Test3.bmp", Test)
-cv2.imwrite("MP5/Results/Pointer3.bmp", Pointer)
-cv2.imwrite("MP5/Results/Joy3.bmp", Joy)
-cv2.imwrite("MP5/Results/Lena3.bmp", Lena)
+cv2.imwrite("MP5/Results/TestR.bmp", Test)
+cv2.imwrite("MP5/Results/PointerR.bmp", Pointer)
+cv2.imwrite("MP5/Results/JoyR.bmp", Joy)
+cv2.imwrite("MP5/Results/LenaR.bmp", Lena)
 
 
 # First version N = 3, sigma = 1, % = 0.8
