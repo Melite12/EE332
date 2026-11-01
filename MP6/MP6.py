@@ -38,56 +38,53 @@ def sig_intersection(parameterised_uint8, threshold):
     size = 50
     mat = np.ones((size, size), np.uint8)
 
-    local_max = cv2.dilate( parameterised_uint8, mat)
+    local_max = cv2.dilate(parameterised_uint8, mat)
     peaks = ((parameterised_uint8 == local_max) & (parameterised_uint8 > threshold_val))
     theta_idx, rho_idx = np.where(peaks)
     print(theta_idx.shape, rho_idx.shape)
 
     return theta_idx, rho_idx
 
-def LineDetection(file):
+def LineDetection(files):
 
-    Edge = CannyEdgeDetector(file)
+    for idx, file in enumerate(files):
 
-    theta_quant = 256
-    rho_quant = 256
-    parameterised_uint8, theta_arr, rho_arr = Parameterise(Edge, theta_quant, rho_quant)
+        Edge = CannyEdgeDetector(file)
 
-    threshold = 0.45
-    theta_idx, rho_idx = sig_intersection(parameterised_uint8, threshold)
+        theta_quant = 128
+        rho_quant = 128
+        parameterised_uint8, theta_arr, rho_arr = Parameterise(Edge, theta_quant, rho_quant)
 
-    output = cv2.imread(file)
+        threshold = 0.45
+        theta_idx, rho_idx = sig_intersection(parameterised_uint8, threshold)
 
-    for theta_idx1, rho_idx1 in zip(theta_idx, rho_idx):
-        theta = theta_arr[theta_idx1]
-        rho = rho_arr[rho_idx1]
+        output = cv2.imread(file)
 
-        x0 = rho * np.cos(theta)
-        y0 = rho * np.sin(theta)
+        for theta_idx1, rho_idx1 in zip(theta_idx, rho_idx):
+            theta = theta_arr[theta_idx1]
+            rho = rho_arr[rho_idx1]
 
-        dist = 400
-        x1 = int(x0 - dist * np.sin(theta))
-        y1 = int(y0 + dist * np.cos(theta))
+            x0 = rho * np.cos(theta)
+            y0 = rho * np.sin(theta)
 
-        x2 = int(x0 + dist * np.sin(theta))
-        y2 = int(y0 - dist * np.cos(theta))
+            dist = 400
+            x1 = int(x0 - dist * np.sin(theta))
+            y1 = int(y0 + dist * np.cos(theta))
 
-        cv2.line(output, (x1, y1), (x2, y2), (150, 150, 150), 1)
+            x2 = int(x0 + dist * np.sin(theta))
+            y2 = int(y0 - dist * np.cos(theta))
 
-    cv2.imshow("Detected Lines", output)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+            cv2.line(output, (x1, y1), (x2, y2), (150, 150, 150), 1)
+
+        cv2.imshow("Detected Lines", output)
+        cv2.imwrite(f"MP6/Results/{idx}R.bmp", output)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+files = {"MP6/test.bmp", "MP6/test2.bmp", "MP6/input.bmp"}
+LineDetection(files)
 
 
-Test = LineDetection("MP6/test.bmp")
-Test2 = LineDetection("MP6/test2.bmp")
-Input = LineDetection("MP6/input.bmp")
 
-cv2.imshow("Test", Test)
-cv2.imshow("Test2", Test2)
-cv2.imshow("Input", Input)
 
-# cv2.imwrite("MP6/Results/Test.bmp", Test)
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
