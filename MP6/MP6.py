@@ -7,7 +7,6 @@ from util import CannyEdgeDetector
 
 def Parameterise(Edge, theta_quant, rho_quant):
     rows, cols = Edge.shape
-    print(rows, cols)
     parameterised = np.zeros((theta_quant, rho_quant), dtype=int)
     
     theta_bound = math.pi/2
@@ -27,18 +26,62 @@ def Parameterise(Edge, theta_quant, rho_quant):
                 parameterised[theta_idx, rho_idx] += 1
 
     parameterised_uint8 =  (parameterised / (np.max(parameterised) / 255)).astype(np.uint8)
+
+    return parameterised_uint8, theta_arr, rho_arr
+
+def sig_intersection(parameterised_uint8, threshold):
     
-    return parameterised_uint8
-            
+    # Thresholding
+    threshold_val = threshold * np.max(parameterised_uint8)
+
+    # Non-maxima Surpression
+    size = 50
+    mat = np.ones((size, size), np.uint8)
+
+    local_max = cv2.dilate( parameterised_uint8, mat)
+    peaks = ((parameterised_uint8 == local_max) & (parameterised_uint8 > threshold_val))
+    theta_idx, rho_idx = np.where(peaks)
+    print(theta_idx.shape, rho_idx.shape)
+
+    return theta_idx, rho_idx
+
+def LineDetection(file):
+
+    Edge = CannyEdgeDetector(file)
+
+    theta_quant = 256
+    rho_quant = 256
+    parameterised_uint8, theta_arr, rho_arr = Parameterise(Edge, theta_quant, rho_quant)
+
+    threshold = 0.45
+    theta_idx, rho_idx = sig_intersection(parameterised_uint8, threshold)
+
+    output = cv2.imread(file)
+
+    for theta_idx1, rho_idx1 in zip(theta_idx, rho_idx):
+        theta = theta_arr[theta_idx1]
+        rho = rho_arr[rho_idx1]
+
+        x0 = rho * np.cos(theta)
+        y0 = rho * np.sin(theta)
+
+        dist = 400
+        x1 = int(x0 - dist * np.sin(theta))
+        y1 = int(y0 + dist * np.cos(theta))
+
+        x2 = int(x0 + dist * np.sin(theta))
+        y2 = int(y0 - dist * np.cos(theta))
+
+        cv2.line(output, (x1, y1), (x2, y2), (150, 150, 150), 1)
+
+    cv2.imshow("Detected Lines", output)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
-Test = CannyEdgeDetector("MP6/test.bmp")
-Test2 = CannyEdgeDetector("MP6/test2.bmp")
-Input = CannyEdgeDetector("MP6/input.bmp")
-
-Test = Parameterise(Test, 256, 256)
-Test2 = Parameterise(Test2, 256, 256)
-Input = Parameterise(Input, 256, 256)
+Test = LineDetection("MP6/test.bmp")
+Test2 = LineDetection("MP6/test2.bmp")
+Input = LineDetection("MP6/input.bmp")
 
 cv2.imshow("Test", Test)
 cv2.imshow("Test2", Test2)
