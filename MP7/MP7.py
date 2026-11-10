@@ -28,28 +28,33 @@ def CreateVideo(Video, fps):
     video.release()
     print("Video created successfully!")
 
-# def SSD(Video, top_left, bottom_right, delta):
-    
-#     prev_img_colour = cv2.imread(images[0])
-#     prev_img = cv2.cvtColor(prev_img_colour, cv2.COLOR_BGR2GRAY)
-#     cv2.imshow("Grayscale", prev_img)
-#     cv2.waitKey(0)
-#     cv2.destroyAllWindows()
-    
-#     # for img in range(1,len(images)):
-#     #     curr_img_colour = cv2.imread(images[img])
-#     #     curr_img = cv2.cvtColor(curr_img_colour, cv2.COLOR_BGR2GRAY)
+def SSD(Video, top_left, bottom_right, delta):
 
-#     #     for c in range
-#         # loop through all the possible next positions
-#             # compute SSD
-#             # if it's lowest, then keep the value
+    # Convert to grayscale
+    prev_img_colour = Video.images[0]
+    prev_img = cv2.cvtColor(prev_img_colour, cv2.COLOR_BGR2GRAY)
 
-#         # create new image with new bounding box
-#         # add the image to results folder
+    total_delta = 2 * delta + 1
+    col_start = top_left[0] - delta
+    col_end = col_start + total_delta
+    row_start = top_left[1] - delta
+    row_end = row_start + total_delta
+    print(col_start, row_start)
     
-#     # make a video from the folder
-#     # return the top_left, bottom_right?
+    for img in range(1,len(Video.images)):
+        curr_img_colour = Video.images[img]
+        curr_img = cv2.cvtColor(curr_img_colour, cv2.COLOR_BGR2GRAY)
+
+        for c in range(col_start, col_end):
+            for r in range(row_start, row_end):
+                # compute SSD
+                # if it's lowest, then keep the value
+
+        # create new image with new bounding box
+        # add the image to results folder
+    
+    # make a video from the folder
+    # return the top_left, bottom_right?
 
 def TargetTracking():
     Girl_video = Video("MP7/image_girl", "MP7/image_girl.mp4")
@@ -67,7 +72,7 @@ def TargetTracking():
 
     # SSD Target Tracking
     delta = 10
-    SSD(images, image_girl_folder, height, width, top_left, bottom_right, delta)
+    SSD(Girl_video, top_left, bottom_right, delta)
 
 
 TargetTracking()
