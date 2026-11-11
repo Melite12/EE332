@@ -99,7 +99,10 @@ def Matching(Video_input, top_left, bottom_right, delta, mode):
                         numerator = np.sum(I_norm * T_norm)
                         denominator = np.sqrt(np.sum(I_norm**2) * np.sum(T_norm**2))
 
-                        err = numerator / denominator if denominator > 0 else -np.inf
+                        if denominator > 0:
+                            err = numerator / denominator 
+                        else:
+                            err = -np.inf
 
                         if err > best_err:
                             best_err = err
