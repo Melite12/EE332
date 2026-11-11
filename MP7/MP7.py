@@ -28,12 +28,23 @@ def CreateVideo(Video_input, fps):
     video.release()
     print("Video created successfully!")
 
-def SSD(Video_input, top_left, bottom_right, delta):
+def Matching(Video_input, top_left, bottom_right, delta, mode):
 
     box_width = bottom_right[0] - top_left[0]
     box_height = bottom_right[1] - top_left[1]
 
     total_delta = 2 * delta + 1
+
+    match mode:
+        case 0:
+            folder = "Results"
+            name = "SSD"
+        case 1:
+            folder = "CC"
+            name = "CC"
+        case 2:
+            folder = "NCC"
+            name = "NCC"
 
     for img in range(1, len(Video_input.images)):
 
@@ -50,7 +61,10 @@ def SSD(Video_input, top_left, bottom_right, delta):
 
         best_c = None
         best_r = None
-        best_ssd = math.inf
+        if mode == 0 :
+            best_err = math.inf
+        else:
+            best_err = -math.inf
 
         for c in range(total_delta):
             for r in range(total_delta):
@@ -65,22 +79,43 @@ def SSD(Video_input, top_left, bottom_right, delta):
 
                 I = curr_img[candidate_row:candidate_row + box_height, candidate_col:candidate_col + box_width].astype(np.float64)
 
-                ssd = np.sum((I - T) ** 2)
+                match mode:
+                    case 0:
+                        err = np.sum((I - T) ** 2)
+                        if err < best_err:
+                            best_err = err
+                            best_c = candidate_col
+                            best_r = candidate_row
+                    case 1:
+                        err = np.sum(I * T) # but want to maximise
+                        if err > best_err:
+                            best_err = err
+                            best_c = candidate_col
+                            best_r = candidate_row
+                    case 2:
+                        I_norm = I - np.mean(I)
+                        T_norm = T - np.mean(T)
 
-                if ssd < best_ssd:
-                    best_ssd = ssd
-                    best_c = candidate_col
-                    best_r = candidate_row
+                        numerator = np.sum(I_norm * T_norm)
+                        denominator = np.sqrt(np.sum(I_norm**2) * np.sum(T_norm**2))
+
+                        err = numerator / denominator if denominator > 0 else -np.inf
+
+                        if err > best_err:
+                            best_err = err
+                            best_c = candidate_col
+                            best_r = candidate_row
+                        
 
         top_left = (best_c, best_r)
         bottom_right = (best_c + box_width, best_r + box_height)
         # make the image and put it in results
         modified_img = Video_input.images[img].copy()
         cv2.rectangle(modified_img, top_left, bottom_right, (200,0,0), 2)
-        cv2.imwrite(f"MP7/Results/{img:03d}.jpg", modified_img)
+        cv2.imwrite(f"MP7/{folder}/{img:03d}.jpg", modified_img)
 
-    SSD_Video = Video("MP7/Results", "MP7/SSD.mp4")
-    CreateVideo(SSD_Video, 10)
+    Output_video = Video(f"MP7/{folder}", f"MP7/{name}.mp4")    
+    CreateVideo(Output_video, 10)
     
 
 def TargetTracking():
@@ -96,11 +131,15 @@ def TargetTracking():
     top_left = (50, 18)
     bottom_right = (93, 68)
     modified_img = cv2.rectangle(modified_img, top_left, bottom_right, (200,0,0), 2)
+
     cv2.imwrite(f"MP7/Results/000.jpg", modified_img)
+    cv2.imwrite(f"MP7/CC/000.jpg", modified_img)
+    cv2.imwrite(f"MP7/NCC/000.jpg", modified_img)
     
-    # SSD Target Tracking
-    delta = 10
-    SSD(Girl_video, top_left, bottom_right, delta)
+    # Target Tracking
+    delta = 20
+    Matching(Girl_video, top_left, bottom_right, delta, 2)
+
 
 
 TargetTracking()
@@ -108,10 +147,3 @@ TargetTracking()
 # cv2.imshow("First Image", first_frame)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
-
-
-
-
-
-
-
